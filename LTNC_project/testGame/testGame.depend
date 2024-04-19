@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1713329944 source:d:\ltnc\ltnc_baitap\ltnc_project\testgame\main.cpp
+	<iostream>
+	<SDL.h>
+
