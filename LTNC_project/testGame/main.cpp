@@ -7,7 +7,7 @@ const int wordCount = sizeof(wordList) / sizeof(string);
 const int maxScore = 100;
 
 string chooseWord();
-bool playGame(int userScore, string systemWord);
+bool playGame(int &userScore, string systemWord);
 string inputFromUser();
 void wordSize(int systemWord_length);
 int currentScore(int userScore, bool flag);
@@ -19,10 +19,13 @@ int main(){
         srand(time(0));
         string systemWord = chooseWord();
         wordSize(systemWord.length());
-        int userScore = maxScore;
+        int userScore = currentScore(maxScore, true);
         playGame(userScore, systemWord);
         char option = playAgain();
         if(option == 'n' || option == 'N'){
+            if(userScore > 0){
+                cout << "Congratulation! You win." <<endl;
+            }
             break;
         }
     }
@@ -35,7 +38,7 @@ string chooseWord()
     return wordList[randomIndex];
 }
 
-bool playGame(int userScore, string systemWord){
+bool playGame(int &userScore, string systemWord){
     string userWord;
     bool flag = false;
     while(1){
@@ -77,7 +80,7 @@ bool checkWord(string systemWord, string userWord){
     if(userWord.length() < systemWord.length()){
         cout<<"Error: Less than "<<systemWord.length()<<" characters !" <<endl;
         return false;
-    } else if (userWord.length() < systemWord.length()){
+    } else if (userWord.length() > systemWord.length()){
         cout<<"Error: More than "<<systemWord.length()<<" characters !" <<endl;
         return false;
     }else if (userWord.length() == systemWord.length() && userWord == systemWord){
