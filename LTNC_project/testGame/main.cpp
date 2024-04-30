@@ -9,18 +9,31 @@ using namespace std;
 
 //******************/
 const int NUM_BUTTOMS = 26;
-const string wordList[] = {"angle", "ant"};
+const string wordList[] = {"firefox", "rockstar","eyelid"};
 const int wordCount = sizeof(wordList) / sizeof(string);
 const int maxScore = 10;
 const int maxCharacter = 15;
 
+void displayStartGame();
+void showGame();
 string chooseWord();
+void printTrue();
+void printFalse();
 bool playGame(int &userScore, string systemWord);
 string inputFromUser();
+void printQuestion(string systemWord);
 void printWordSize(int systemWord_length);
+int findIndexOfWord(const string wordList[],const int n, string word);
+void printImg(string systemWord);
+void printScore(int userScore);
 int currentScore(int userScore, bool flag);
 bool checkWord(string systemWord, string userWord);
-char playAgain();
+void printLose();
+void printOption();
+void printOptionQuestion(int userScore);
+char playAgain(int userScore);
+void printWin();
+void printVictory(int userScore);
 
 //******************/
 const string WINDOW_TITLE = "Catch The Word";
@@ -33,6 +46,7 @@ SDL_Texture *exactly, *lose, *not_correct, *suggest, *play_again, *win;
 SDL_Texture *numberScore[maxScore+1];
 SDL_Texture *numberButtoms[NUM_BUTTOMS+1];
 SDL_Texture *numberCharacter[maxCharacter+1];
+SDL_Texture *numberImg[wordCount+1];
 
 void load_SDL_and_Images();
 void unload_SDL_and_Images();
@@ -53,15 +67,32 @@ void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, int w, int
 int main(){
     load_SDL_and_Images();
     while (1){
+        displayStartGame();
         srand(time(0));
         string systemWord = chooseWord();
-        printWordSize(systemWord.length());
         int userScore = currentScore(maxScore, true);
+        printQuestion(systemWord);
+        /**************check mouse******************
+        SDL_Event event;
+        int x, y;
+        while (true) {
+        SDL_GetMouseState(&x, &y);
+        cerr << x << ", " << y << endl;
+
+        SDL_PollEvent(&event);
+        switch (event.type) {
+            case SDL_QUIT:
+                 exit(0);
+                 break;
+        }
+        SDL_Delay(100);
+        }
+        /********************************/
         playGame(userScore, systemWord);
-        char option = playAgain();
+        char option = playAgain(userScore);
         if(option == 'n' || option == 'N'){
             if(userScore > 0){
-                cout << "Congratulation! You win." <<endl;
+                printVictory(userScore);
             }
             break;
         }
@@ -71,27 +102,56 @@ int main(){
     return 0;
 }
 
+void displayStartGame() {
+    showGame();
+    pause();
+}
+
+void printQuestion(string systemWord){
+    printWordSize(systemWord.length());
+    printImg(systemWord);
+}
+
 string chooseWord()
 {
 	int randomIndex = rand() % wordCount;
     return wordList[randomIndex];
 }
 
+void printFalse(){
+    renderTexture(not_correct, renderer, 480, 200);
+    SDL_RenderPresent(renderer);
+}
+
 bool playGame(int &userScore, string systemWord){
     string userWord;
     bool flag = false;
     while(1){
-        if(userScore <= 0){
-            cout << "Your score less than 0! You lose."<<endl;
-            return false;
-        }
         userWord = inputFromUser();
+        pause();
         if (checkWord(systemWord, userWord)){
             flag = true;
+            showGame();
+            printTrue();
             userScore = currentScore(userScore, flag);
+            pause();
+            userScore = currentScore(userScore, true);
             return true;
         } else {
+            flag = false;
+            showGame();
+            printFalse();
             userScore = currentScore(userScore, flag);
+            pause();
+            if(userScore <= 0){
+                showGame();
+                printLose();
+                userScore = currentScore(userScore, flag);
+                pause();
+                return false;
+            }
+            printQuestion(systemWord);
+            userScore = currentScore(userScore, true);
         }
     }
 }
@@ -104,17 +164,41 @@ string inputFromUser(){
 }
 
 void printWordSize(int systemWord_length){
-    renderTexture(suggest, renderer, 10, 10);
-    renderTexture(numberCharacter[systemWord_length], renderer, 10, 10);
+    renderTexture(suggest, renderer, 60, 180);
+    renderTexture(numberCharacter[systemWord_length], renderer, 155, 180);
+    SDL_RenderPresent(renderer);
+}
+
+int findIndexOfWord(const string wordList[],const int n, string word) {
+    auto it = find(wordList, wordList + n, word);
+    if (it != wordList + n) {
+        return distance(wordList, it);
+    }
+    return -1;
+}
+
+void printImg(string systemWord){
+    int index = findIndexOfWord(wordList, wordCount, systemWord);
+    renderTexture(numberImg[index], renderer, 410, 95);
+    SDL_RenderPresent(renderer);
+}
+
+void printScore(int userScore){
+    renderTexture(numberScore[userScore], renderer, 938, 150);
     SDL_RenderPresent(renderer);
 }
 
 int currentScore(int userScore, bool flag){
     if(flag == false){
-        userScore-=10;
+        userScore-=1;
     }
-    cout <<"Your score is: " << userScore << "." <<endl;
+    printScore(userScore);
     return userScore;
+}
+
+void printTrue(){
+    renderTexture(exactly, renderer, 480, 200);
+    SDL_RenderPresent(renderer);
 }
 
 bool checkWord(string systemWord, string userWord){
@@ -133,11 +217,39 @@ bool checkWord(string systemWord, string userWord){
     return false;
 }
 
-char playAgain(){
+void printLose(){
+    renderTexture(lose, renderer, 438, 200);
+    SDL_RenderPresent(renderer);
+}
+
+void printOption(){
+    renderTexture(play_again, renderer, 480, 200);
+    SDL_RenderPresent(renderer);
+}
+
+void printOptionQuestion(int userScore){
+    showGame();
+    currentScore(userScore, true);
+    printOption();
+}
+
+char playAgain(int userScore){
     char option;
+    printOptionQuestion(userScore);
     cout << "Do you want to play again? Press ANY KEYS to play again or N to quit."<<endl;
     cin >> option;
     return option;
+}
+
+void printWin(){
+    renderTexture(win, renderer, 390, 75);
+    SDL_RenderPresent(renderer);
+}
+
+void printVictory(int userScore){
+    showGame();
+    currentScore(userScore, true);
+    printWin();
 }
 
 //****************************************************
@@ -159,6 +271,9 @@ void unload_SDL_and_Images()
     for (int i=0; i<maxCharacter; i++) {
         SDL_DestroyTexture(numberCharacter[i]);
     }
+    for (int i=0; i<maxCharacter; i++) {
+        SDL_DestroyTexture(numberImg[i]);
+    }
     quitSDL(window, renderer);
 }
 
@@ -176,6 +291,7 @@ void load_SDL_and_Images()
     bool is_load_buttom_failed = false;
     bool is_load_score_failed = false;
     bool is_load_character_failed = false;
+    bool is_load_questionImg_failed = false;
     for (int i=0; i<NUM_BUTTOMS; i++) {
         string character = "";
         character+=char(i+65);
@@ -187,7 +303,7 @@ void load_SDL_and_Images()
             break;
         }
     }
-    for (int i=0; i<maxScore; i++) {
+    for (int i=0; i<=maxScore; i++) {
         string filename = "images/" +to_string(i*10) + ".png";
         const char* filename_cstr = filename.c_str();
         numberScore[i] = loadTexture(filename_cstr, renderer);
@@ -205,9 +321,18 @@ void load_SDL_and_Images()
             break;
         }
     }
+    for (int i=0; i<wordCount; i++) {
+        string filename = "images/" +wordList[i] + ".png";
+        const char* filename_cstr = filename.c_str();
+        numberImg[i] = loadTexture(filename_cstr, renderer);
+        if (numberImg[i] == nullptr) {
+            is_load_questionImg_failed = true;
+            break;
+        }
+    }
     if (background == nullptr  || exactly == nullptr || lose == nullptr
         || not_correct == nullptr  || suggest == nullptr || play_again == nullptr
-        || win == nullptr || is_load_buttom_failed || is_load_character_failed || is_load_score_failed){
+        || win == nullptr || is_load_buttom_failed || is_load_character_failed || is_load_score_failed || is_load_questionImg_failed){
         unload_SDL_and_Images();
         exit(1);
     }
