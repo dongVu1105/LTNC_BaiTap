@@ -20,7 +20,11 @@ string chooseWord();
 void printTrue();
 void printFalse();
 bool playGame(int &userScore, string systemWord);
-string inputFromUser();
+int computeNumber(int x, int y);
+int playerChoose();
+void printType(string ans);
+void printInput(int userScore, string ans, string systemWord);
+string inputFromUser(int userScore, string systemWord);
 void printQuestion(string systemWord);
 void printWordSize(int systemWord_length);
 int findIndexOfWord(const string wordList[],const int n, string word);
@@ -31,14 +35,16 @@ bool checkWord(string systemWord, string userWord);
 void printLose();
 void printOption();
 void printOptionQuestion(int userScore);
-char playAgain(int userScore);
+void printInputToPlayAgain(int userScore, string ans);
+string inputToPlayAgain(int userScore, string systemWord);
+string playAgain(int userScore, string systemWord);
 void printWin();
 void printVictory(int userScore);
 
 //******************/
 const string WINDOW_TITLE = "Catch The Word";
-const int SCREEN_WIDTH = 1127;// ;
-const int SCREEN_HEIGHT = 618; //;
+const int SCREEN_WIDTH = 1103;// ;
+const int SCREEN_HEIGHT = 631; //;
 SDL_Window* window;
 SDL_Renderer* renderer;
 SDL_Texture *background;
@@ -89,8 +95,8 @@ int main(){
         }
         /********************************/
         playGame(userScore, systemWord);
-        char option = playAgain(userScore);
-        if(option == 'n' || option == 'N'){
+        string option = playAgain(userScore, systemWord);
+        if(option == "n"){
             if(userScore > 0){
                 printVictory(userScore);
             }
@@ -127,7 +133,7 @@ bool playGame(int &userScore, string systemWord){
     string userWord;
     bool flag = false;
     while(1){
-        userWord = inputFromUser();
+        userWord = inputFromUser(userScore, systemWord);
         pause();
         if (checkWord(systemWord, userWord)){
             flag = true;
@@ -156,11 +162,67 @@ bool playGame(int &userScore, string systemWord){
     }
 }
 
-string inputFromUser(){
-    string input;
-    cout<< "Please type your answer: " << endl;
-    cin>>input;
-    return input;
+int computeNumber(int x, int y)
+{
+    int tableX0 = 223, tableY0=481, tableX1=896, tableY1= 591;
+    if (x<tableX0 || x>tableX1 || y<tableY0 || y>tableY1) return -1;
+    int col = (x-tableX0)*10/(tableX1-tableX0), row=(y-tableY0)*3/(tableY1-tableY0);
+    return (row*10 + col + 1);
+}
+
+int playerChoose(){
+    int number=-1;
+    SDL_Event e;
+    while (number<=0 || number>30) {
+        SDL_Delay(10);
+        if ( SDL_WaitEvent(&e) == 0) continue;
+        if ((e.type == SDL_QUIT) || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)) {
+            unload_SDL_and_Images();
+            exit(1);
+        }
+
+        if (e.type == SDL_MOUSEBUTTONDOWN) {
+            number = computeNumber(e.button.x, e.button.y);
+        }
+    }
+    return number;
+}
+
+void printType(string ans){
+    int x0=256, y0=425;
+    for(int i=0; i<ans.length();i++){
+        char c = ans[i];
+        int index = c-'a';
+        renderTexture(numberButtoms[index], renderer, x0+48*(i+1),y0);
+        SDL_RenderPresent(renderer);
+    }
+}
+
+void printInput(int userScore, string ans, string systemWord){
+    showGame();
+    printQuestion(systemWord);
+    currentScore(userScore, true);
+    printType(ans);
+}
+
+string inputFromUser(int userScore, string systemWord){
+    int numberOfButton;
+    char button;
+    string ans="";
+    while (1){
+        numberOfButton = playerChoose();
+        if(numberOfButton == 29 || numberOfButton == 30){
+            break;
+        } else if (numberOfButton ==27 || numberOfButton == 28){
+            ans="";
+            printInput(userScore, ans, systemWord);
+        } else {
+            button = numberOfButton+96;
+            ans+=button;
+            printInput(userScore, ans, systemWord);
+        }
+    }
+    return ans;
 }
 
 void printWordSize(int systemWord_length){
@@ -202,18 +264,9 @@ void printTrue(){
 }
 
 bool checkWord(string systemWord, string userWord){
-    /*
-    if(userWord.length() < systemWord.length()){
-        cout<<"Error: Less than "<<systemWord.length()<<" characters !" <<endl;
-        return false;
-    } else if (userWord.length() > systemWord.length()){
-        cout<<"Error: More than "<<systemWord.length()<<" characters !" <<endl;
-        return false;
-    }else*/ if (userWord.length() == systemWord.length() && userWord == systemWord){
-        cout << "Exactly !" << endl;
+    if (userWord.length() == systemWord.length() && userWord == systemWord){
         return true;
     }
-    cout<<"Not Correct! Please try again."<<endl;
     return false;
 }
 
@@ -233,11 +286,36 @@ void printOptionQuestion(int userScore){
     printOption();
 }
 
-char playAgain(int userScore){
-    char option;
+void printInputToPlayAgain(int userScore, string ans){
+    showGame();
+    currentScore(userScore, true);
+    printType(ans);
+}
+
+string inputToPlayAgain(int userScore, string systemWord){
+    int numberOfButton;
+    char button;
+    string ans="";
+    while (1){
+        numberOfButton = playerChoose();
+        if(numberOfButton == 29 || numberOfButton == 30){
+            break;
+        } else if (numberOfButton ==27 || numberOfButton == 28){
+            ans="";
+            printInputToPlayAgain(userScore, ans);
+        } else {
+            button = numberOfButton+96;
+            ans+=button;
+            printInputToPlayAgain(userScore, ans);
+        }
+    }
+    return ans;
+}
+
+string playAgain(int userScore, string systemWord){
+    string option;
     printOptionQuestion(userScore);
-    cout << "Do you want to play again? Press ANY KEYS to play again or N to quit."<<endl;
-    cin >> option;
+    option = inputToPlayAgain(userScore, systemWord);
     return option;
 }
 
