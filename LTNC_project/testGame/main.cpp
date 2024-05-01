@@ -1,7 +1,5 @@
 #include <bits/stdc++.h>
 #define SDL_MAIN_HANDLED
-#include <SDL.h>
-#include <cstdlib>
 #include <ctime>
 #include <SDL_image.h>
 
@@ -78,22 +76,6 @@ int main(){
         string systemWord = chooseWord();
         int userScore = currentScore(maxScore, true);
         printQuestion(systemWord);
-        /**************check mouse******************
-        SDL_Event event;
-        int x, y;
-        while (true) {
-        SDL_GetMouseState(&x, &y);
-        cerr << x << ", " << y << endl;
-
-        SDL_PollEvent(&event);
-        switch (event.type) {
-            case SDL_QUIT:
-                 exit(0);
-                 break;
-        }
-        SDL_Delay(100);
-        }
-        /********************************/
         playGame(userScore, systemWord);
         string option = playAgain(userScore, systemWord);
         if(option == "n"){
@@ -214,7 +196,9 @@ string inputFromUser(int userScore, string systemWord){
         if(numberOfButton == 29 || numberOfButton == 30){
             break;
         } else if (numberOfButton ==27 || numberOfButton == 28){
-            ans="";
+            string temp = ans;
+            int tempLength = temp.length();
+            ans=temp.substr(0, tempLength-1);
             printInput(userScore, ans, systemWord);
         } else {
             button = numberOfButton+96;
