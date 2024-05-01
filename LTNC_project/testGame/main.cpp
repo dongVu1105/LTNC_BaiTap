@@ -92,7 +92,6 @@ int main(){
 
 void displayStartGame() {
     showGame();
-    pause();
 }
 
 void printQuestion(string systemWord){
@@ -116,7 +115,6 @@ bool playGame(int &userScore, string systemWord){
     bool flag = false;
     while(1){
         userWord = inputFromUser(userScore, systemWord);
-        pause();
         if (checkWord(systemWord, userWord)){
             flag = true;
             showGame();
