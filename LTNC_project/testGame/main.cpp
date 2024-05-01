@@ -7,9 +7,14 @@ using namespace std;
 
 //******************/
 const int NUM_BUTTOMS = 26;
-const string wordList[] = {"firefox", "rockstar","eyelid"};
+const string wordList[] = {"firefox", "rockstar","eyelid", "blackmail",
+"brainstorm", "brokenheart", "carwash", "cocktail", "countdown",
+"deadline", "fastfood", "firefly", "fullmoon", "honeymoon", "hourglass",
+"keyboard", "kidnap", "pineapple", "popcorn", "rainbow", "rainforest",
+"redbull", "seafood", "secondhand", "starfish", "sunflower", "waterfall",
+"watermelon"};
 const int wordCount = sizeof(wordList) / sizeof(string);
-const int maxScore = 10;
+const int maxScore = 3;
 const int maxCharacter = 15;
 
 void displayStartGame();
@@ -46,7 +51,7 @@ const int SCREEN_HEIGHT = 631; //;
 SDL_Window* window;
 SDL_Renderer* renderer;
 SDL_Texture *background;
-SDL_Texture *exactly, *lose, *not_correct, *suggest, *play_again, *win;
+SDL_Texture *exactly, *lose, *not_correct, *suggest, *play_again, *win, *play_continue;
 SDL_Texture *numberScore[maxScore+1];
 SDL_Texture *numberButtoms[NUM_BUTTOMS+1];
 SDL_Texture *numberCharacter[maxCharacter+1];
@@ -257,19 +262,26 @@ void printLose(){
     SDL_RenderPresent(renderer);
 }
 
-void printOption(){
-    renderTexture(play_again, renderer, 480, 200);
-    SDL_RenderPresent(renderer);
+void printOption(int userScore){
+    if(userScore<=0){
+        renderTexture(play_again, renderer, 480, 200);
+        SDL_RenderPresent(renderer);
+    } else {
+        renderTexture(play_continue, renderer, 480, 200);
+        SDL_RenderPresent(renderer);
+    }
+
 }
 
 void printOptionQuestion(int userScore){
     showGame();
     currentScore(userScore, true);
-    printOption();
+    printOption(userScore);
 }
 
 void printInputToPlayAgain(int userScore, string ans){
     showGame();
+    printOption(userScore);
     currentScore(userScore, true);
     printType(ans);
 }
@@ -347,6 +359,7 @@ void load_SDL_and_Images()
     not_correct = loadTexture("images/not_correct.png", renderer);
     suggest = loadTexture("images/suggest.png", renderer);
     play_again = loadTexture("images/play_again.png", renderer);
+    play_continue = loadTexture("images/play_continue.png", renderer);
     win = loadTexture("images/win.png", renderer);
     bool is_load_buttom_failed = false;
     bool is_load_score_failed = false;
